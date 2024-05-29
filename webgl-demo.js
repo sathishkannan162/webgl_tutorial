@@ -9,7 +9,7 @@ let deltaTime = 0;
 function main() {
   const canvas = document.querySelector("#glcanvas");
 
-  const gl = canvas.getContext("webgl");
+  const gl = canvas.getContext("webgl2");
 
   if (gl == null) {
     alert(
