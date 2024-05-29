@@ -3,6 +3,9 @@ import { drawScene } from "./draw-scene.js";
 
 main();
 
+let cubeRotation = 0.0;
+let deltaTime = 0;
+
 function main() {
   const canvas = document.querySelector("#glcanvas");
 
@@ -19,15 +22,22 @@ function main() {
 
   const vsSource = `
     attribute vec4 aVertexPosition;
+    attribute vec4 aVertexColor;
+
     uniform mat4 uModelViewMatrix;
     uniform mat4 uProjectionMatrix;
-    void main() {
+    
+    varying lowp vec4 vColor;
+
+    void main(void) {
       gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+      vColor = aVertexColor;
     }
   `;
   const fsSource = `
-    void main() {
-      gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+    varying lowp vec4 vColor;
+    void main(void) {
+      gl_FragColor = vColor;
     } 
   `;
 
@@ -37,6 +47,7 @@ function main() {
     program: shaderProgram,
     attribLocations: {
       vertexPosition: gl.getAttribLocation(shaderProgram, "aVertexPosition"),
+      vertexColor: gl.getAttribLocation(shaderProgram, "aVertexColor"),
     },
     uniformLocations: {
       projectionMatrix: gl.getUniformLocation(
@@ -48,7 +59,20 @@ function main() {
   };
 
   const buffers = initBuffers(gl);
-  drawScene(gl, programInfo, buffers);
+  let then = 0;
+
+  function render(now) {
+    now *= 0.001;
+    deltaTime = now - then;
+    then = now;
+
+    drawScene(gl, programInfo, buffers, cubeRotation);
+    cubeRotation += deltaTime;
+
+    requestAnimationFrame(render);
+  }
+
+  requestAnimationFrame(render);
 }
 
 function initShaderProgram(gl, vsSource, fsSource) {
